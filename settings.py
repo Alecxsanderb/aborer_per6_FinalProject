@@ -1,0 +1,13 @@
+# file created by: Alec Borer
+
+WIDTH = 1300
+HEIGHT = 800
+PLAYER_ACC = .1
+PLAYER_FRICTION = -.05
+MOB_FRICTION = -.2
+MOB_ACC = .9
+BLACK = (0,0,0)
+TEAL = (50, 120, 255)
+RED = (255, 25, 25)
+FPS = 60
+RUNNING = True
