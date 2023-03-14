@@ -36,6 +36,7 @@ class Player(Sprite):
             self.acc.x = +PLAYER_ACC
         if keystate[pg.K_SPACE]:
             self.pos = WIDTH/2, HEIGHT/2
+
     # method to keep it on screen
     def inbounds(self):
         if self.pos.x > WIDTH - 25:
@@ -77,16 +78,17 @@ class Mob(Sprite):
         self.acc = vec(0,0)
         self.cofric = 0.1
         self.canjump = False
+        
     
     # method to keep it on screen
     def inbounds(self):
-        if self.pos.x > WIDTH - 25:
+        if self.pos.x > WIDTH - 40:
             # print("I am off the right side of the screen")
-            self.pos.x = WIDTH - 25
+            self.pos.x = WIDTH - 40
             self.vel.x = 0
-        if self.pos.y > HEIGHT - 25:
+        if self.pos.y > HEIGHT - 40:
             # print("I am off the right side of the screen")
-            self.pos.y = HEIGHT - 25
+            self.pos.y = HEIGHT - 40
             self.vel.y = 0
         if self.pos.x < 25:
             # print("I am off the right side of the screen")
@@ -98,7 +100,7 @@ class Mob(Sprite):
             self.vel.y = 0
 
     def behavior(self):
-        print(self.vel)
+        # print(self.vel)
         self.acc.y = MOB_ACC
 
     def update(self):
