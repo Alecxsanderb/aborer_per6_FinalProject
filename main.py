@@ -30,12 +30,24 @@ all_sprites = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 player = Player()
 
-enemy1 = Mob(80, 80)
-
 all_sprites.add(player)
-all_sprites.add(enemy1)
+
+# enemy1 = Mob(80, 80)
+# enemy2 = Mob(80, 80)
+# enemy3 = Mob(80, 80)
+# enemy4 = Mob(80, 80)
+
+# all_sprites.add(enemy1)
+# all_sprites.add(enemy2)
+# all_sprites.add(enemy3)
+# all_sprites.add(enemy4)
 # all_sprites.add(testSprite)
 
+
+for i in range(0,20):
+    m = Mob(randint(30,90), randint(30,90), [randint(0,255), randint(0,255), randint(0,255)])
+    # enemies.add(m)
+    all_sprites.add(m)
 
 # game loop
 

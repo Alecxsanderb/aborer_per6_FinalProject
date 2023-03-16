@@ -6,6 +6,8 @@ from pygame.sprite import Sprite
 
 from settings import *
 
+from random import randint
+
 vec = pg.math.Vector2
 
 # player class
@@ -39,22 +41,22 @@ class Player(Sprite):
 
     # method to keep it on screen
     def inbounds(self):
-        if self.pos.x > WIDTH - 25:
+        if self.pos.x > WIDTH - 40:
             # print("I am off the right side of the screen")
-            self.pos.x = WIDTH - 25
-            self.vel.x = 0
-        if self.pos.y > HEIGHT - 25:
+            self.pos.x = WIDTH - 40
+            self.vel.x *= -1
+        if self.pos.y > HEIGHT - 40:
             # print("I am off the right side of the screen")
-            self.pos.y = HEIGHT - 25
-            self.vel.y = 0
+            self.pos.y = HEIGHT - 40
+            self.vel.y *= -1
         if self.pos.x < 25:
             # print("I am off the right side of the screen")
             self.pos.x = 25
-            self.vel.x = 0
+            self.vel.x *= -1
         if self.pos.y < 25:
             # print("I am off the right side of the screen")
             self.pos.y = 25
-            self.vel.y = 0
+            self.vel.y *= -1
 
     def update(self):
         self.inbounds()
@@ -65,16 +67,17 @@ class Player(Sprite):
         self.rect.center = self.pos
 
 class Mob(Sprite):
-    def __init__(self, width, height):
+    def __init__(self, width, height, color):
         Sprite.__init__(self)
         self.width = width
         self.height = height
         self.image = pg.Surface((self.width,self.height))
-        self.image.fill(RED)
+        self.color = color
+        self.image.fill(self.color)
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH/2, HEIGHT/2)
         self.pos = vec(WIDTH/2, HEIGHT/2)
-        self.vel = vec(0,0)
+        self.vel = vec( randint(-5,5), randint(-5,5))
         self.acc = vec(0,0)
         self.cofric = 0.1
         self.canjump = False
@@ -85,29 +88,27 @@ class Mob(Sprite):
         if self.pos.x > WIDTH - 40:
             # print("I am off the right side of the screen")
             self.pos.x = WIDTH - 40
-            self.vel.x = 0
+            self.vel.x *= -1
         if self.pos.y > HEIGHT - 40:
             # print("I am off the right side of the screen")
             self.pos.y = HEIGHT - 40
-            self.vel.y = 0
+            self.vel.y *= -1
         if self.pos.x < 25:
             # print("I am off the right side of the screen")
             self.pos.x = 25
-            self.vel.x = 0
+            self.vel.x *= -1
         if self.pos.y < 25:
             # print("I am off the right side of the screen")
             self.pos.y = 25
-            self.vel.y = 0
+            self.vel.y *= -1
 
     def behavior(self):
         # print(self.vel)
-        self.acc.y = MOB_ACC
+        self.inbounds()
+        self.pos += self.vel
+        self.rect.center = self.pos
 
     def update(self):
-        self.inbounds()
-        self.acc = self.vel * MOB_FRICTION
-        self.behavior()
-        self.vel += self.acc
-        self.pos += self.vel + 0.5 * self.acc
-        self.rect.center = self.pos
+       self.behavior()
+       
 
