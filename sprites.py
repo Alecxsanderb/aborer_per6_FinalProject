@@ -41,13 +41,13 @@ class Player(Sprite):
 
     # method to keep it on screen
     def inbounds(self):
-        if self.pos.x > WIDTH - 40:
+        if self.pos.x > WIDTH - 25:
             # print("I am off the right side of the screen")
-            self.pos.x = WIDTH - 40
+            self.pos.x = WIDTH - 25
             self.vel.x *= -1
-        if self.pos.y > HEIGHT - 40:
+        if self.pos.y > HEIGHT - 25:
             # print("I am off the right side of the screen")
-            self.pos.y = HEIGHT - 40
+            self.pos.y = HEIGHT - 25
             self.vel.y *= -1
         if self.pos.x < 25:
             # print("I am off the right side of the screen")
@@ -66,6 +66,8 @@ class Player(Sprite):
         self.pos += self.vel + 0.5 * self.acc
         self.rect.center = self.pos
 
+
+
 class Mob(Sprite):
     def __init__(self, width, height, color):
         Sprite.__init__(self)
@@ -75,8 +77,8 @@ class Mob(Sprite):
         self.color = color
         self.image.fill(self.color)
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH/2, HEIGHT/2)
-        self.pos = vec(WIDTH/2, HEIGHT/2)
+        self.rect.center = (100, 100)
+        self.pos = vec(100, 100)
         self.vel = vec( randint(-5,5), randint(-5,5))
         self.acc = vec(0,0)
         self.cofric = 0.1
