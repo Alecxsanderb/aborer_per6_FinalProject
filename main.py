@@ -55,7 +55,7 @@ all_sprites.add(player)
 
 # creates a for loop that creates 20 mobs
 # randomizes size and color of said mobs and adds them to enemies and all_sprites groups
-for i in range(0, 1000):
+for i in range(0, 25):
     m = Mob(randint(30,90), randint(30,90), [randint(0,255), randint(0,255), randint(0,255)])
     enemies.add(m)
     all_sprites.add(m)
