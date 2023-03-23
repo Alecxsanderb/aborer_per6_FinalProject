@@ -14,8 +14,10 @@ vec = pg.math.Vector2
 
 
 class Player(Sprite):
-    def __init__(self):
+    def __init__(self, game):
         Sprite.__init__(self)
+        # properties of Player
+        self.game = game
         self.image = pg.Surface((50,50))
         self.image.fill(BLACK)
         self.rect = self.image.get_rect()
@@ -25,6 +27,7 @@ class Player(Sprite):
         self.acc = vec(0,0)
         self.cofric = 0.1
         self.canjump = False
+    
     def input(self):
         keystate = pg.key.get_pressed()
 
@@ -36,8 +39,9 @@ class Player(Sprite):
             self.acc.y = +PLAYER_ACC
         if keystate[pg.K_d]:
             self.acc.x = +PLAYER_ACC
-        if keystate[pg.K_SPACE]:
-            self.pos = WIDTH/2, HEIGHT/2
+    
+    def jump(self):
+        hits = pg.sprite.spritecollide(self, self.game.platforms, False)
 
     # method to keep it on screen
     def inbounds(self):
@@ -78,8 +82,8 @@ class Mob(Sprite):
         self.image.fill(self.color)
         self.rect = self.image.get_rect()
         self.rect.center = (100, 100)
-        self.pos = vec(100, 100)
-        self.vel = vec( randint(-5,5), randint(-5,5))
+        self.pos = vec(randint(0, 1300), randint(0, 800))
+        self.vel = vec( 3*randint(-5,5)/randint(1,20), 3*randint(-5,5)/randint(1,20))
         self.acc = vec(0,0)
         self.cofric = 0.1
         self.canjump = False
