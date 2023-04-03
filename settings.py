@@ -4,8 +4,10 @@ from random import randint
 
 WIDTH = 1300
 HEIGHT = 800
-PLAYER_ACC = .6
-PLAYER_FRICTION = -.08
+PLAYER_ACC = .5
+PLAYER_FRICTION = -.12
+PLAYER_JUMP = 20
+PLAYER_GRAV = .8
 BLACK = (0,0,0)
 TEAL = (50, 120, 255)
 RED = (255, 25, 25) 
@@ -16,3 +18,7 @@ FPS = 60
 RUNNING = True
 PAUSED = False
 FREEZE = False
+VARIANT = ("normal", "bouncy")
+ALIVE = True
+MOB_GRAV = .8
+MOB_JUMP = 20
