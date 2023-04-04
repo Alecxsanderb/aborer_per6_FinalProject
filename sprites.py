@@ -60,11 +60,11 @@ class Player(Sprite):
             self.pos.y = 25
             self.vel.y *= 0
     def mob_collide(self):
-        hits = pg.sprite.spritecollide(self, self.game.enemies, True)
+        hits = pg.sprite.spritecollide(self, self.game.enemies, False)
         if hits:
-            # print("you collided with an enemy")
-            self.game.score += 1
-            # print(self.game.score)
+            self.vel.x *= -1.5
+            self.vel.y += self.vel.x/2
+
     def update(self):
         self.mob_collide()
         self.inbounds()
@@ -76,8 +76,10 @@ class Player(Sprite):
         self.rect.midbottom = self.pos
 
 class Mob(Sprite):
-    def __init__(self, width, height, color):
+    def __init__(self, game, player, width, height, color):
         Sprite.__init__(self)
+        self.player = player
+        self.game = game
         self.width = width
         self.height = height
         self.image = pg.Surface((self.width,self.height))
@@ -85,11 +87,12 @@ class Mob(Sprite):
         self.image.fill(self.color)
         self.rect = self.image.get_rect()
         self.rect.center = (100, 100)
-        self.pos = vec(randint(0, 1300), randint(0, 800))
+        self.pos = vec(randint(200, 1100), randint(0, 800))
         self.vel = vec( 3*randint(-5,5)/randint(1,20), 3*randint(-5,5)/randint(1,20))
         self.acc = vec(0,0)
         self.cofric = 0.1
-        self.canjump = False
+        self.canjump = True
+        self.enemyspeed = .1
     # method to keep it on screen
     def inbounds(self):
         if self.pos.x > WIDTH - 40:
@@ -108,14 +111,38 @@ class Mob(Sprite):
             # print("I am off the right side of the screen")
             self.pos.y = 25
             self.vel.y *= -1
+
+    def player_collide(self):
+        hits = pg.sprite.spritecollide(self, self.game.mc, False)
+        if hits:
+            self.vel.x += self.player.vel.x/3
+            self.vel.y += self.vel.x/2
+
+    def chase(self):
+        if self.player.pos.x > self.pos.x:
+            self.vel.x += self.enemyspeed
+        if self.player.pos.x < self.pos.x:
+            self.vel.x -= self.enemyspeed
+        if self.player.pos.y < self.pos.y:
+                self.jump()
+        
+    def jump(self):
+        self.rect.x += 1
+        hits = pg.sprite.spritecollide(self, self.game.platforms, False)
+        self.rect.x -= 1
+        if hits:
+            self.vel.y = -MOB_JUMP
+
     def behavior(self):
         # print(self.vel)
         self.inbounds()
+        self.chase()
+        self.player_collide()
         self.pos += self.vel
         self.rect.center = self.pos
     def update(self):
         self.behavior()
-        self.acc = vec(0, PLAYER_GRAV)
+        self.acc = vec(0, MOB_GRAV)
         self.acc.x = self.vel.x * PLAYER_FRICTION
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
