@@ -10,7 +10,7 @@ vec = pg.math.Vector2
 
 
 class Player(Sprite):
-    def __init__(self, game):
+    def __init__(self, game, playernumber):
         Sprite.__init__(self)
         # properties of Player
         self.game = game
@@ -24,18 +24,24 @@ class Player(Sprite):
         self.cofric = 0.1
         self.canjump = False 
         self.living = True
+        self.number = playernumber
     def input(self):
-        keystate = pg.key.get_pressed()
-        # if keystate[pg.K_s]:
-        #     self.acc.y = +PLAYER_ACC
-        # if keystate[pg.K_w]:
-        #     self.acc.y = -PLAYER_ACC
-        if keystate[pg.K_a]:
-            self.acc.x = -PLAYER_ACC
-        if keystate[pg.K_d]:
-            self.acc.x = +PLAYER_ACC
-        if keystate[pg.K_SPACE]:
-            self.jump()
+        if self.number == "p1":
+            keystate = pg.key.get_pressed()
+            if keystate[pg.K_a]:
+                self.acc.x = -PLAYER_ACC
+            if keystate[pg.K_d]:
+                self.acc.x = +PLAYER_ACC
+            if keystate[pg.K_w]:
+                self.jump()
+        if self.number == "p2":
+            keystate = pg.key.get_pressed()
+            if keystate[pg.K_LEFT]:
+                self.acc.x = -PLAYER_ACC
+            if keystate[pg.K_RIGHT]:
+                self.acc.x = +PLAYER_ACC
+            if keystate[pg.K_UP]:
+                self.jump()
     def jump(self):
         self.rect.x += 1
         hits = pg.sprite.spritecollide(self, self.game.platforms, False)
@@ -123,8 +129,9 @@ class Mob(Sprite):
             self.vel.x += self.enemyspeed
         if self.player.pos.x < self.pos.x:
             self.vel.x -= self.enemyspeed
-        if self.player.pos.y < self.pos.y:
-                self.jump()
+        r = randint(0,75)
+        if r == 1:
+            self.jump()
         
     def jump(self):
         self.rect.x += 1
