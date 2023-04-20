@@ -4,7 +4,7 @@ from random import randint
 
 WIDTH = 1300
 HEIGHT = 800
-PLAYER_ACC = .75
+PLAYER_ACC = .65
 PLAYER_FRICTION = -.2
 PLAYER_JUMP = 20
 PLAYER_GRAV = .8
