@@ -1,4 +1,11 @@
 # file created by: Alec Borer
+
+'''
+sources:
+Youtube: "In-Depth Pygame Physics Explanation" by DaFluffyPotato
+
+'''
+
 import pygame as pg
 from pygame.sprite import Sprite
 from settings import *
@@ -9,10 +16,11 @@ vec = pg.math.Vector2
 
 # player class
 class Player(Sprite):
-    def __init__(self, game, playernumber):
+    def __init__(self, game, platforms, playernumber):
         Sprite.__init__(self)
         # properties of Player
         self.game = game
+        self.platforms = platforms
         self.image = pg.Surface((50,50))
         self.image.fill(BLACK)
         self.rect = self.image.get_rect()
@@ -73,15 +81,38 @@ class Player(Sprite):
             self.vel.y *= 0
         
     # method for creating a collision with mobs
-    def mob_collide(self):
-        hits = pg.sprite.spritecollide(self, self.game.enemies, False)
-        if hits:
-            self.vel.x *= -1.5
-            self.vel.y += self.vel.x/2
+    # def collide(self):
+    #     hits = pg.sprite.spritecollide(self, self.game.enemies, False)
+    #     if hits:
+    #         self.vel.x *= -1.5
+    #         self.vel.y += self.vel.x/2
+    
+    def collide_test(self):
+        collide = []
+        if pg.Rect.colliderect(self.game.all_sprites):
+            collide.append(self.game.all_sprites)
+        return collide
+    
+    def calculate_collide(self, movement):
+        self.rect.x += movement[0]
+        collide = self.collide_test()
+        for sprites in collide:
+            if movement[0] > 0:
+                self.rect.right = sprites.left
+            if movement[0] < 0:
+                self.rect.left = sprites.right
+        self.rect.y += movement[1]
+        collide = self.collide_test()
+        for sprites in collide:
+            if movement[1] > 0:
+                self.rect.bottom = sprites.top
+            if movement[1] < 0:
+                self.rect.top = sprites.bottom
+
 
     # update and physics
     def update(self):
-        self.mob_collide()
+        self.calculate_collide(self.vel)
         self.inbounds()
         self.acc = vec(0, PLAYER_GRAV)
         self.acc.x = self.vel.x * PLAYER_FRICTION
