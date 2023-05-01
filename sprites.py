@@ -79,40 +79,9 @@ class Player(Sprite):
             # print("I am off the right side of the screen")
             self.pos.y = 25
             self.vel.y *= 0
-        
-    # method for creating a collision with mobs
-    # def collide(self):
-    #     hits = pg.sprite.spritecollide(self, self.game.enemies, False)
-    #     if hits:
-    #         self.vel.x *= -1.5
-    #         self.vel.y += self.vel.x/2
-    
-    def collide_test(self):
-        collide = []
-        if pg.Rect.colliderect(self.game.all_sprites):
-            collide.append(self.game.all_sprites)
-        return collide
-    
-    def calculate_collide(self, movement):
-        self.rect.x += movement[0]
-        collide = self.collide_test()
-        for sprites in collide:
-            if movement[0] > 0:
-                self.rect.right = sprites.left
-            if movement[0] < 0:
-                self.rect.left = sprites.right
-        self.rect.y += movement[1]
-        collide = self.collide_test()
-        for sprites in collide:
-            if movement[1] > 0:
-                self.rect.bottom = sprites.top
-            if movement[1] < 0:
-                self.rect.top = sprites.bottom
-
-
+ 
     # update and physics
     def update(self):
-        self.calculate_collide(self.vel)
         self.inbounds()
         self.acc = vec(0, PLAYER_GRAV)
         self.acc.x = self.vel.x * PLAYER_FRICTION
