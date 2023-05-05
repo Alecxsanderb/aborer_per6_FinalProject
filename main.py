@@ -1,12 +1,13 @@
 # file created by: Alec Borer
 
 '''
-my goal is to create a mob that chases the player. game will be like tag and score will be based on time
+my goal is to create a mob that chases the player. it/they will grab the player and try to drag the player off the map. 
 '''
 
 # import libs
 import pygame as pg
 import os
+import time
 # import settings 
 from settings import *
 from sprites import *
@@ -25,6 +26,11 @@ class Game:
         self.clock = pg.time.Clock()
         self.running = True
 
+        # timer stuff
+        self.timeelapsed = 0
+        self.survivecounter = pg.USEREVENT+1
+        pg.time.set_timer(self.survivecounter, 1000)
+
     # start new game, create all sprites
     def new(self):
         # began creating main menu and option for two players, but did not get to finish
@@ -36,13 +42,13 @@ class Game:
         self.platforms = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
         self.mc = pg.sprite.Group()
-        self.ground = Platforms(WIDTH - 400, 30, 200, HEIGHT - 200, GREEN, "normal")
-        self.player1 = Player(self, self.ground, "p1")
-        self.enemy = Mob(self, self.player1, 75, 75, RED)
+        self.ground = Platforms(WIDTH - 400, 30, 200, HEIGHT - 100, GREEN, "normal")
+        self.player = Player(self, self.ground)
+        self.enemy = Mob(self, self.player, 25, 25, RED)
         self.enemies.add(self.enemy)
         self.all_sprites.add(self.enemy)
-        self.mc.add(self.player1)
-        self.all_sprites.add(self.player1)
+        self.mc.add(self.player)
+        self.all_sprites.add(self.player)
         self.all_sprites.add(self.ground)
         self.platforms.add(self.ground)
         # where the game runs
@@ -64,26 +70,35 @@ class Game:
                     self.playing = False
                 self.running = False
             # this section resets the game if R is pressed
-            # Note: I could not figure out how to reset the timer
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_r:
-                    self.player1.living = False
+                    self.player.living = False
+                    self.player.grabvalue = 10
+                    self.timeelapsed = 0
                     self.new()
+                if event.key == pg.K_SPACE and not self.player.grabbedstate and not self.player.escaped:
+                    self.player.grabvalue -= 1
+            if self.player.living:
+                if event.type == self.survivecounter:
+                    self.timeelapsed += 1
+            if self.player.escaped:
+                if event.type == self.player.grabtimecounter:
+                    self.player.timesincegrabbed += 1
     
     # updates game
     def update(self):
         # draws sprites
         self.all_sprites.update()
         # this section essentially makes platforms solid for the player, has stuff set up for variants but they aren't used
-        if self.player1.vel.y > 0:
-            hits = pg.sprite.spritecollide(self.player1, self.platforms, False)
+        if self.player.vel.y > 0:
+            hits = pg.sprite.spritecollide(self.player, self.platforms, False)
             if hits:
                 if hits[0].variant == "normal":
-                    self.player1.pos.y = hits[0].rect.top
-                    self.player1.vel.y = 0
+                    self.player.pos.y = hits[0].rect.top
+                    self.player.vel.y = 0
                 if hits[0].variant == "bouncy":
-                    self.player1.pos.y = hits[0].rect.top
-                    self.player1.vel.y = -20
+                    self.player.pos.y = hits[0].rect.top
+                    self.player.vel.y = -20
         # this section gives the mob the ability to collide with platforms
         if self.enemy.vel.y > 0:
             landing = pg.sprite.spritecollide(self.enemy, self.platforms, False)
@@ -92,7 +107,7 @@ class Game:
                     self.enemy.pos.y = landing[0].rect.top
                     self.enemy.vel.y = 0
         # this section ends the game if the player falls off the screen
-        if not self.player1.living:
+        if not self.player.living:
             self.end = True
         self.difficulty()
 
@@ -126,12 +141,11 @@ class Game:
     # how the timer is created
     def timer(self):
         # while the game is running
-        if self.player1.living:
-            self.time = pg.time.get_ticks()
-            self.draw_text("Time: " + str(self.time/1000), 50, WHITE, WIDTH/2, 30)
+        if self.player.living:
+            self.draw_text("Time: " + str(self.timeelapsed), 50, WHITE, WIDTH/2, 30)
         # after the game ends
         else:
-            self.draw_text("Time: " + str(self.time/1000), 50, WHITE, WIDTH/2, HEIGHT/2)
+            self.draw_text("Time: " + str(self.timeelapsed), 50, WHITE, WIDTH/2, HEIGHT/2)
 
     # main screen that I have not gotten working yet
     def main_screen(self):
@@ -142,7 +156,7 @@ class Game:
 
     # end screen
     def end_screen(self):
-        if not self.player1.living:
+        if not self.player.living:
             self.screen.fill(BLACK)
             self.draw_text("Game Over", 200, WHITE, WIDTH/2, HEIGHT/2 - 250)
             self.timer()
@@ -150,9 +164,9 @@ class Game:
 
     # method that increases the speen of the enemy as time goes on
     def difficulty(self):
-        if self.player1.living:
+        if self.player.living:
             self.enemy.enemyspeed *= 1.001
-        if not self.player1.living:
+        if not self.player.living:
             self.enemy.enemyspeed = 0
 
 # instantiate the game class

@@ -16,12 +16,12 @@ vec = pg.math.Vector2
 
 # player class
 class Player(Sprite):
-    def __init__(self, game, platforms, playernumber):
+    def __init__(self, game, platforms):
         Sprite.__init__(self)
         # properties of Player
         self.game = game
         self.platforms = platforms
-        self.image = pg.Surface((50,50))
+        self.image = pg.Surface((15,15))
         self.image.fill(BLACK)
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH/2, HEIGHT/2)
@@ -31,28 +31,28 @@ class Player(Sprite):
         self.cofric = 0.1
         self.canjump = False 
         self.living = True
-        self.number = playernumber
+
+        # variables for getting grabbed and escaping
+        self.grabbedstate = True
+        self.grabvalue = 1
+        self.escaped = False
+        self.increasegrabvalue = 1
+
+        # timer for player escaping
+        self.timesincegrabbed = 0
+        self.grabtimecounter = pg.USEREVENT+1
+        pg.time.set_timer(self.grabtimecounter, 1000)
 
     # inputs for players, is capable of distinguishing between two players 
     def input(self):
         # player 1 controls
-        if self.number == "p1":
-            keystate = pg.key.get_pressed()
-            if keystate[pg.K_a]:
-                self.acc.x = -PLAYER_ACC
-            if keystate[pg.K_d]:
-                self.acc.x = +PLAYER_ACC
-            if keystate[pg.K_w]:
-                self.jump()
-        # player 2 controls
-        if self.number == "p2":
-            keystate = pg.key.get_pressed()
-            if keystate[pg.K_LEFT]:
-                self.acc.x = -PLAYER_ACC
-            if keystate[pg.K_RIGHT]:
-                self.acc.x = +PLAYER_ACC
-            if keystate[pg.K_UP]:
-                self.jump()
+        keystate = pg.key.get_pressed()
+        if keystate[pg.K_a]:
+            self.acc.x = -PLAYER_ACC
+        if keystate[pg.K_d]:
+            self.acc.x = +PLAYER_ACC
+        if keystate[pg.K_w]:
+            self.jump()
     
     # jump method 
     def jump(self):
@@ -79,17 +79,52 @@ class Player(Sprite):
             # print("I am off the right side of the screen")
             self.pos.y = 25
             self.vel.y *= 0
+    
+    def check_for_grab(self):
+        mhits = pg.sprite.spritecollide(self, self.game.enemies, False)
+        if mhits:
+        #    print("got grabbed")
+           self.grabbedstate = False
  
     # update and physics
     def update(self):
-        self.inbounds()
-        self.acc = vec(0, PLAYER_GRAV)
-        self.acc.x = self.vel.x * PLAYER_FRICTION
-        self.input()
-        self.vel += self.acc
-        self.pos += self.vel + 0.5 * self.acc
-        self.rect.midbottom = self.pos
-
+        if self.grabvalue <= 0:
+            self.escaped = True
+            self.grabbedstate = True
+            self.pos = vec(self.pos.x , self.pos.y)
+            # print("escaped")
+        if self.escaped:
+            self.inbounds()
+            self.acc = vec(0, PLAYER_GRAV)
+            self.acc.x = self.vel.x * PLAYER_FRICTION
+            self.input()
+            self.vel += self.acc
+            self.pos += self.vel + 0.5 * self.acc
+            self.rect.midbottom = self.pos
+            # print(str(self.timesincegrabbed))
+            if self.timesincegrabbed >= 1:
+                self.escaped = False
+                self.timesincegrabbed = 0
+                self.increasegrabvalue += 1
+                self.grabvalue = 1
+                self.grabvalue += self.increasegrabvalue
+        if not self.escaped:
+            self.check_for_grab()
+            if self.grabbedstate:
+                # print("not grabbed")
+                print(str(self.grabvalue))
+                self.inbounds()
+                self.acc = vec(0, PLAYER_GRAV)
+                self.acc.x = self.vel.x * PLAYER_FRICTION
+                self.input()
+                self.vel += self.acc
+                self.pos += self.vel + 0.5 * self.acc
+                self.rect.midbottom = self.pos
+            if not self.grabbedstate and not self.escaped:
+                # print("grabbed")
+                self.pos = self.game.enemy.pos
+                self.rect.midbottom = self.pos
+            
 
 
 # mob class
@@ -132,13 +167,6 @@ class Mob(Sprite):
             self.pos.y = 25
             self.vel.y *= -1
 
-    # method for creating collision with player
-    def player_collide(self):
-        hits = pg.sprite.spritecollide(self, self.game.mc, False)
-        if hits:
-            self.vel.x += self.player.vel.x/3
-            self.vel.y += self.vel.x/2
-
     # how mob chases player
     def chase(self):
         # if the player is right of the mob, move right
@@ -148,7 +176,7 @@ class Mob(Sprite):
         if self.player.pos.x < self.pos.x:
             self.vel.x -= self.enemyspeed
         # randomly jump
-        r = randint(0,75)
+        r = randint(0,60)
         if r == 1:
             self.jump()
         
@@ -165,7 +193,6 @@ class Mob(Sprite):
         # print(self.vel)
         self.inbounds()
         self.chase()
-        self.player_collide()
         self.pos += self.vel
         self.rect.center = self.pos
 
@@ -194,4 +221,3 @@ class Platforms(Sprite):
         self.color = color
         self.image.fill(self.color)
         self.variant = variant
-        
