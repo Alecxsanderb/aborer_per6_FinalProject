@@ -2,6 +2,7 @@
 
 '''
 my goal is to create a mob that chases the player. it/they will grab the player and try to drag the player off the map. 
+aaaaaa
 '''
 
 # import libs
@@ -42,8 +43,8 @@ class Game:
         self.platforms = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
         self.mc = pg.sprite.Group()
-        self.ground = Platforms(WIDTH - 400, 30, 200, HEIGHT - 100, GREEN, "normal")
-        self.player = Player(self, self.ground)
+        self.ground = Platform(WIDTH - 400, 30, 200, HEIGHT - 100, GREEN, "normal")
+        self.player = Player(self)
         self.enemy = Mob(self, self.player, 25, 25, RED)
         self.enemies.add(self.enemy)
         self.all_sprites.add(self.enemy)
@@ -51,6 +52,11 @@ class Game:
         self.all_sprites.add(self.player)
         self.all_sprites.add(self.ground)
         self.platforms.add(self.ground)
+
+        for plat in PLATLIST:
+            p = Platform(*plat)
+            self.all_sprites.add(p)
+            self.platforms.add(p)
         # where the game runs
         self.run() 
 
@@ -71,19 +77,23 @@ class Game:
                 self.running = False
             # this section resets the game if R is pressed
             if event.type == pg.KEYDOWN:
-                if event.key == pg.K_r:
+                if event.key == pg.K_r and self.end:
                     self.player.living = False
                     self.player.grabvalue = 10
                     self.timeelapsed = 0
                     self.new()
                 if event.key == pg.K_SPACE and not self.player.grabbedstate and not self.player.escaped:
                     self.player.grabvalue -= 1
+                    self.player.jump()
             if self.player.living:
                 if event.type == self.survivecounter:
                     self.timeelapsed += 1
             if self.player.escaped:
                 if event.type == self.player.grabtimecounter:
                     self.player.timesincegrabbed += 1
+            playerprojectilehit = pg.sprite.spritecollide(self.player, self.enemy.attack, True)
+            if playerprojectilehit:
+                self.player.vel += (randint(-4,4))
     
     # updates game
     def update(self):
@@ -98,17 +108,21 @@ class Game:
                     self.player.vel.y = 0
                 if hits[0].variant == "bouncy":
                     self.player.pos.y = hits[0].rect.top
-                    self.player.vel.y = -20
+                    self.player.vel.y = -25
         # this section gives the mob the ability to collide with platforms
         if self.enemy.vel.y > 0:
             landing = pg.sprite.spritecollide(self.enemy, self.platforms, False)
             if landing:
-                if landing[0]:
+                if landing[0].variant == "normal":
                     self.enemy.pos.y = landing[0].rect.top
                     self.enemy.vel.y = 0
+                if landing[0].variant == "bouncy" and self.enemy.pos.y > self.player.pos.y:
+                    self.enemy.pos.y = landing[0].rect.top
+                    self.enemy.vel.y = -12
         # this section ends the game if the player falls off the screen
         if not self.player.living:
             self.end = True
+        
         self.difficulty()
 
     # draws the different screens
@@ -145,14 +159,12 @@ class Game:
             self.draw_text("Time: " + str(self.timeelapsed), 50, WHITE, WIDTH/2, 30)
         # after the game ends
         else:
-            self.draw_text("Time: " + str(self.timeelapsed), 50, WHITE, WIDTH/2, HEIGHT/2)
+            self.draw_text("You survived " + str(self.timeelapsed) + " seconds", 50, WHITE, WIDTH/2, HEIGHT/2)
 
     # main screen that I have not gotten working yet
     def main_screen(self):
         self.screen.fill(TEAL)
         self.draw_text("Menu", 150, WHITE, WIDTH/2, HEIGHT/2 - 150)
-        self.draw_text("Press 1 for 1 player", 30, WHITE, WIDTH/2 - 200, HEIGHT/2 + 100)
-        self.draw_text("Press 2 for 2 players", 30, WHITE, WIDTH/2 + 200, HEIGHT/2 + 100)
 
     # end screen
     def end_screen(self):

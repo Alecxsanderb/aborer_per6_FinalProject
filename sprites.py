@@ -16,11 +16,10 @@ vec = pg.math.Vector2
 
 # player class
 class Player(Sprite):
-    def __init__(self, game, platforms):
+    def __init__(self, game):
         Sprite.__init__(self)
         # properties of Player
         self.game = game
-        self.platforms = platforms
         self.image = pg.Surface((15,15))
         self.image.fill(BLACK)
         self.rect = self.image.get_rect()
@@ -34,9 +33,9 @@ class Player(Sprite):
 
         # variables for getting grabbed and escaping
         self.grabbedstate = True
-        self.grabvalue = 1
+        self.grabvalue = 10
         self.escaped = False
-        self.increasegrabvalue = 1
+        self.increasegrabvalue = 0
 
         # timer for player escaping
         self.timesincegrabbed = 0
@@ -53,7 +52,7 @@ class Player(Sprite):
             self.acc.x = +PLAYER_ACC
         if keystate[pg.K_w]:
             self.jump()
-    
+
     # jump method 
     def jump(self):
         self.rect.x += 1
@@ -86,6 +85,7 @@ class Player(Sprite):
         #    print("got grabbed")
            self.grabbedstate = False
  
+ 
     # update and physics
     def update(self):
         if self.grabvalue <= 0:
@@ -106,13 +106,13 @@ class Player(Sprite):
                 self.escaped = False
                 self.timesincegrabbed = 0
                 self.increasegrabvalue += 1
-                self.grabvalue = 1
+                self.grabvalue = 10
                 self.grabvalue += self.increasegrabvalue
         if not self.escaped:
             self.check_for_grab()
             if self.grabbedstate:
                 # print("not grabbed")
-                print(str(self.grabvalue))
+                # print(str(self.grabvalue))
                 self.inbounds()
                 self.acc = vec(0, PLAYER_GRAV)
                 self.acc.x = self.vel.x * PLAYER_FRICTION
@@ -122,6 +122,7 @@ class Player(Sprite):
                 self.rect.midbottom = self.pos
             if not self.grabbedstate and not self.escaped:
                 # print("grabbed")
+                self.inbounds()
                 self.pos = self.game.enemy.pos
                 self.rect.midbottom = self.pos
             
@@ -141,10 +142,10 @@ class Mob(Sprite):
         self.image.fill(self.color)
         self.rect = self.image.get_rect()
         self.rect.center = (100, 100)
-        self.pos = vec(randint(200, 1100), randint(0, 800))
+        self.pos = vec(randint(200, 1100), randint(0, 600))
         self.vel = vec( 3*randint(-5,5)/randint(1,20), 3*randint(-5,5)/randint(1,20))
         self.acc = vec(0,0)
-        self.cofric = 0.2
+        self.cofric = 0.5
         self.canjump = True
         self.enemyspeed = .1
 
@@ -154,10 +155,6 @@ class Mob(Sprite):
             # print("I am off the right side of the screen")
             self.pos.x = WIDTH - 40
             self.vel.x *= -1
-        if self.pos.y > HEIGHT - 40:
-            # print("I am off the right side of the screen")
-            self.pos.y = HEIGHT/2
-            self.vel.y = 0
         if self.pos.x < 25:
             # print("I am off the right side of the screen")
             self.pos.x = 25
@@ -188,11 +185,27 @@ class Mob(Sprite):
         if hits:
             self.vel.y = -MOB_JUMP
 
+    def kamikaze(self):
+        if not self.player.grabbedstate and not self.player.escaped:
+            if self.pos.x <= WIDTH/2:
+                self.vel.x -= self.enemyspeed
+            if self.pos.x >= WIDTH/2:
+                self.vel.x += self.enemyspeed
+
+    def upattack(self):
+        self.attack = Projectile(10, 30, self.pos.x, self.pos.y, 0, -10, RED)
+        self.game.all_sprites.add(self.attack)
+
     # mob behavior
     def behavior(self):
         # print(self.vel)
         self.inbounds()
         self.chase()
+        self.kamikaze()
+        if self.player.pos.y <= (self.pos.y - 40):
+            n = randint(0, 60)
+            if n == 1:
+                self.upattack()
         self.pos += self.vel
         self.rect.center = self.pos
 
@@ -208,7 +221,7 @@ class Mob(Sprite):
 
 
 # platform class
-class Platforms(Sprite):
+class Platform(Sprite):
     def __init__(self, width, height, x, y, color, variant):
         Sprite.__init__(self)
         # properties of Platforms
@@ -221,3 +234,36 @@ class Platforms(Sprite):
         self.color = color
         self.image.fill(self.color)
         self.variant = variant
+
+class Projectile(Sprite):
+    def __init__(self, width, height, x, y, movementx, movementy, color):
+        Sprite.__init__(self)
+        self.width = width
+        self.height = height
+        self.image = pg.Surface((self.width, self.height))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.color = color
+        self.image.fill(self.color)
+        self.rect = self.image.get_rect()
+        self.rect.center = (100, 100)
+        self.pos = vec(x, y)
+        self.vel = vec( movementx, movementy)
+        self.acc = vec(0,0)
+        self.cofric = 0.5
+        self.canjump = True
+        self.enemyspeed = .1
+
+        self.plifetime = 0
+        self.plifetimecounter = pg.USEREVENT+1
+        pg.time.set_timer(self.plifetimecounter, 1000)
+
+    def update(self):
+        self.acc = vec(0, 0)
+        self.acc.x = self.vel.x * PLAYER_FRICTION
+        self.vel += self.acc
+        self.pos += self.vel + 0.5 * self.acc
+        self.rect.center = self.pos
+        if self.plifetime >= 1:
+            self.kill()
