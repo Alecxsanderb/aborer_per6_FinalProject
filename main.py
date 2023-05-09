@@ -91,9 +91,9 @@ class Game:
             if self.player.escaped:
                 if event.type == self.player.grabtimecounter:
                     self.player.timesincegrabbed += 1
-            playerprojectilehit = pg.sprite.spritecollide(self.player, self.enemy.attack, True)
-            if playerprojectilehit:
-                self.player.vel += (randint(-4,4))
+            # playerprojectilehit = pg.sprite.spritecollide(self.player, self.enemy.attack, True)
+            # if playerprojectilehit:
+            #     self.player.vel += (randint(-4,4))
     
     # updates game
     def update(self):
