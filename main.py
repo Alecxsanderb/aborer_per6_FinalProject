@@ -2,11 +2,12 @@
 
 '''
 my goal is to create a mob that chases the player. it/they will grab the player and try to drag the player off the map. 
-aaaaaa
+
+sources: Domineco showed me how to do the timers
 '''
 
 # import libs
-import pygame as pg
+import pygame as pg 
 import os
 import time
 # import settings 
@@ -42,13 +43,12 @@ class Game:
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
-        self.mc = pg.sprite.Group()
+        self.bullets = pg.sprite.Group()
         self.ground = Platform(WIDTH - 400, 30, 200, HEIGHT - 100, GREEN, "normal")
         self.player = Player(self)
         self.enemy = Mob(self, self.player, 25, 25, RED)
         self.enemies.add(self.enemy)
         self.all_sprites.add(self.enemy)
-        self.mc.add(self.player)
         self.all_sprites.add(self.player)
         self.all_sprites.add(self.ground)
         self.platforms.add(self.ground)
@@ -85,15 +85,16 @@ class Game:
                 if event.key == pg.K_SPACE and not self.player.grabbedstate and not self.player.escaped:
                     self.player.grabvalue -= 1
                     self.player.jump()
+                if event.key == pg.K_SPACE:
+                    self.player.punch()
             if self.player.living:
                 if event.type == self.survivecounter:
                     self.timeelapsed += 1
             if self.player.escaped:
                 if event.type == self.player.grabtimecounter:
                     self.player.timesincegrabbed += 1
-            # playerprojectilehit = pg.sprite.spritecollide(self.player, self.enemy.attack, True)
-            # if playerprojectilehit:
-            #     self.player.vel += (randint(-4,4))
+            if self.player.hit:
+                self.player.punchlife += 1
     
     # updates game
     def update(self):
@@ -112,17 +113,21 @@ class Game:
         # this section gives the mob the ability to collide with platforms
         if self.enemy.vel.y > 0:
             landing = pg.sprite.spritecollide(self.enemy, self.platforms, False)
-            if landing:
+            if landing and self.enemy.pos.y >= self.player.pos.y:
                 if landing[0].variant == "normal":
                     self.enemy.pos.y = landing[0].rect.top
                     self.enemy.vel.y = 0
                 if landing[0].variant == "bouncy" and self.enemy.pos.y > self.player.pos.y:
                     self.enemy.pos.y = landing[0].rect.top
                     self.enemy.vel.y = -12
+        playerprojectilehit = pg.sprite.spritecollide(self.player, self.bullets, False)
+        if playerprojectilehit:
+            # print("hit")
+            self.player.vel.x = (randint(-1, 1) * 35)
+            self.player.vel.y -= 12
         # this section ends the game if the player falls off the screen
         if not self.player.living:
             self.end = True
-        
         self.difficulty()
 
     # draws the different screens
@@ -176,8 +181,9 @@ class Game:
 
     # method that increases the speen of the enemy as time goes on
     def difficulty(self):
-        if self.player.living:
+        if self.player.living and self.enemy.enemyspeed <= .6:
             self.enemy.enemyspeed *= 1.001
+            # print(str(self.enemy.enemyspeed))
         if not self.player.living:
             self.enemy.enemyspeed = 0
 

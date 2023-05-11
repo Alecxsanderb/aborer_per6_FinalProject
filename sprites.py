@@ -2,7 +2,7 @@
 
 '''
 sources:
-Youtube: "In-Depth Pygame Physics Explanation" by DaFluffyPotato
+used some of Domineco's code for the timers
 
 '''
 
@@ -30,6 +30,7 @@ class Player(Sprite):
         self.cofric = 0.1
         self.canjump = False 
         self.living = True
+        self.hit = False
 
         # variables for getting grabbed and escaping
         self.grabbedstate = True
@@ -41,6 +42,11 @@ class Player(Sprite):
         self.timesincegrabbed = 0
         self.grabtimecounter = pg.USEREVENT+1
         pg.time.set_timer(self.grabtimecounter, 1000)
+
+        # timer for player escaping
+        self.punchlife = 0
+        self.punchcounter = pg.USEREVENT+1
+        pg.time.set_timer(self.punchcounter, 1000)
 
     # inputs for players, is capable of distinguishing between two players 
     def input(self):
@@ -84,7 +90,16 @@ class Player(Sprite):
         if mhits:
         #    print("got grabbed")
            self.grabbedstate = False
- 
+
+    def punch(self):
+        self.hit = True
+        self.attk = Projectile(self, 30, 15, self.pos.x, self.pos.y, 0, 0, WHITE)
+        self.game.all_sprites.add(self.attk)
+        if self.punchlife >= .5:
+            self.hit = False
+            self.attk.pos = (100000, 100000)
+            self.punchlife = 0
+            print("dead")
  
     # update and physics
     def update(self):
@@ -193,7 +208,8 @@ class Mob(Sprite):
                 self.vel.x += self.enemyspeed
 
     def upattack(self):
-        self.attack = Projectile(10, 30, self.pos.x, self.pos.y, 0, -10, RED)
+        self.attack = Projectile(self, 3, 30, self.pos.x, self.pos.y, 0, -15, RED)
+        self.game.bullets.add(self.attack)
         self.game.all_sprites.add(self.attack)
 
     # mob behavior
@@ -236,8 +252,9 @@ class Platform(Sprite):
         self.variant = variant
 
 class Projectile(Sprite):
-    def __init__(self, width, height, x, y, movementx, movementy, color):
+    def __init__(self, mob, width, height, x, y, movementx, movementy, color):
         Sprite.__init__(self)
+        self.mob = mob
         self.width = width
         self.height = height
         self.image = pg.Surface((self.width, self.height))
@@ -247,23 +264,26 @@ class Projectile(Sprite):
         self.color = color
         self.image.fill(self.color)
         self.rect = self.image.get_rect()
-        self.rect.center = (100, 100)
+        self.rect.center = (self.mob.pos.x, self.mob.pos.x)
         self.pos = vec(x, y)
         self.vel = vec( movementx, movementy)
         self.acc = vec(0,0)
-        self.cofric = 0.5
-        self.canjump = True
-        self.enemyspeed = .1
-
-        self.plifetime = 0
-        self.plifetimecounter = pg.USEREVENT+1
-        pg.time.set_timer(self.plifetimecounter, 1000)
 
     def update(self):
         self.acc = vec(0, 0)
-        self.acc.x = self.vel.x * PLAYER_FRICTION
+        self.acc.x = self.vel.x
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
-        self.rect.center = self.pos
-        if self.plifetime >= 1:
+        self.rect.midbottom = self.pos
+        if self.pos.y <= -50:
+            print("dead")
+            self.kill()
+        if self.pos.y >= HEIGHT + 50:
+            print("dead")
+            self.kill()
+        if self.pos.x <= -50:
+            print("dead")
+            self.kill()
+        if self.pos.x >= WIDTH + 50:
+            print("dead")
             self.kill()

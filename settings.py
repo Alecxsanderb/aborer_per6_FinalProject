@@ -25,4 +25,9 @@ MOB_GRAV = .4
 MOB_JUMP = 7.1
 
 PLATLIST = [(200, 10, WIDTH/2 - 100, HEIGHT - 150, RED, "bouncy"), 
-            (150, 10, WIDTH/2 + 200, 300, GREEN, "normal")]
+            (150, 10, WIDTH/2 + 200, 300, GREEN, "normal"),
+            (150, 10, WIDTH/2 - 350, 300, GREEN, "normal"),
+            (150, 10, WIDTH/2 + 125, 425, GREEN, "normal"),
+            (150, 10, WIDTH/2 - 275, 425, GREEN, "normal"),
+            (150, 10, WIDTH/2 + 300, 500, GREEN, "normal"),
+            (150, 10, WIDTH/2 - 450, 500, GREEN, "normal"),]
