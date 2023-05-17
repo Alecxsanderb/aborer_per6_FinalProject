@@ -5,15 +5,19 @@ goals:
 [X] mob that chases player with artificial stupidity 
 [X] mob can grab player and drag them off the map
 [X] give the mob a projectile attack
-[] give the player an attack to fight back agains the mob
+[X] give the player an attack to fight back agains the mob
 
 sources: Domineco showed me how to do the timers
+        I didn't use any sources because everything I added were expansions on concepts we already used.
+        Everything I did was just insantiating classes and using functions that we had already used in class,
+        as well as the timers I used from Domineco. It's all just logical statements, summoning and destroying
+        sprites, and basic functions handling how the sprite hitboxes interact. I did try researching some logic
+        for certain sprite interactionss but in the end I could not get it to work so I just found some workarounds
 '''
 
 # import libs
 import pygame as pg 
 import os
-import time
 # import settings 
 from settings import *
 from sprites import *
