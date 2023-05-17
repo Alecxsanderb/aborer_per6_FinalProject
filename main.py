@@ -94,7 +94,7 @@ class Game:
                 if event.key == pg.K_SPACE and not self.player.grabbedstate and not self.player.escaped:
                     self.player.grabvalue -= 1
                     self.player.jump()
-                if event.key == pg.K_f:
+                if event.key == pg.K_f and self.player.grabbedstate:
                     self.player.punch()
                     print("attacked")
             if self.player.living:
