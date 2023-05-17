@@ -93,16 +93,17 @@ class Player(Sprite):
 
     def punch(self):
         self.hit = True
-        self.attk = Projectile(self, 30, 15, self.pos.x, self.pos.y, 0, 0, WHITE)
+        self.attk = Projectile(self, 60, 15, self.pos.x, self.pos.y, 0, 0, WHITE)
         self.game.all_sprites.add(self.attk)
-        if self.punchlife >= .5:
-            self.hit = False
-            self.attk.pos = (100000, 100000)
-            self.punchlife = 0
-            print("dead")
+        self.game.playerpunch.add(self.attk)
  
     # update and physics
     def update(self):
+        if self.punchlife >= 5:
+            self.hit = False
+            self.punchlife = 0
+            self.attk.pos = (100000, 100000)
+            print("dead")
         if self.grabvalue <= 0:
             self.escaped = True
             self.grabbedstate = True
@@ -178,6 +179,8 @@ class Mob(Sprite):
             # print("I am off the right side of the screen")
             self.pos.y = 25
             self.vel.y *= -1
+        if self.pos.y >= HEIGHT:
+            self.pos = vec(randint(200, 1100), randint(0, 600))
 
     # how mob chases player
     def chase(self):
@@ -276,14 +279,14 @@ class Projectile(Sprite):
         self.pos += self.vel + 0.5 * self.acc
         self.rect.midbottom = self.pos
         if self.pos.y <= -50:
-            print("dead")
+            # print("dead")
             self.kill()
         if self.pos.y >= HEIGHT + 50:
-            print("dead")
+            # print("dead")
             self.kill()
         if self.pos.x <= -50:
-            print("dead")
+            # print("dead")
             self.kill()
         if self.pos.x >= WIDTH + 50:
-            print("dead")
+            # print("dead")
             self.kill()

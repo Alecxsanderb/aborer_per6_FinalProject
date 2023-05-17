@@ -1,7 +1,11 @@
 # file created by: Alec Borer
 
 '''
-my goal is to create a mob that chases the player. it/they will grab the player and try to drag the player off the map. 
+goals:
+[X] mob that chases player with artificial stupidity 
+[X] mob can grab player and drag them off the map
+[X] give the mob a projectile attack
+[] give the player an attack to fight back agains the mob
 
 sources: Domineco showed me how to do the timers
 '''
@@ -44,6 +48,7 @@ class Game:
         self.platforms = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
         self.bullets = pg.sprite.Group()
+        self.playerpunch = pg.sprite.Group()
         self.ground = Platform(WIDTH - 400, 30, 200, HEIGHT - 100, GREEN, "normal")
         self.player = Player(self)
         self.enemy = Mob(self, self.player, 25, 25, RED)
@@ -85,8 +90,9 @@ class Game:
                 if event.key == pg.K_SPACE and not self.player.grabbedstate and not self.player.escaped:
                     self.player.grabvalue -= 1
                     self.player.jump()
-                if event.key == pg.K_SPACE:
+                if event.key == pg.K_f:
                     self.player.punch()
+                    print("attacked")
             if self.player.living:
                 if event.type == self.survivecounter:
                     self.timeelapsed += 1
@@ -94,6 +100,7 @@ class Game:
                 if event.type == self.player.grabtimecounter:
                     self.player.timesincegrabbed += 1
             if self.player.hit:
+                print("hit")
                 self.player.punchlife += 1
     
     # updates game
@@ -125,6 +132,9 @@ class Game:
             # print("hit")
             self.player.vel.x = (randint(-1, 1) * 35)
             self.player.vel.y -= 12
+        playerhitmob = pg.sprite.spritecollide(self.enemy, self.playerpunch, False)
+        if playerhitmob:
+            self.enemy.vel *= -18
         # this section ends the game if the player falls off the screen
         if not self.player.living:
             self.end = True
